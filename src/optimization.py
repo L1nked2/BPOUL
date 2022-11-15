@@ -21,7 +21,6 @@ def calc_mean_returns(raw_data: pd.DataFrame, weights: np.array):
 # calculate sharpe_ratio, sqrt(252) for annual sharpe ratio
 # meaning 252 trading days in a year
 def calc_sharpe_ratio(mean_returns: pd.DataFrame):
-  assert len(mean_returns.columns) == 1
   sharpe_ratio = (252**0.5) * mean_returns.mean() / mean_returns.std()
   return sharpe_ratio
 
@@ -29,11 +28,11 @@ def calc_sharpe_ratio(mean_returns: pd.DataFrame):
 # raw_data includes only closing price, indexed by date and columns matches exactly with feature_stocks
 def optimize_portfolio(stock_returns: pd.DataFrame, feature_stocks: pd.Series, method='gradient'):
   # initialize values
-  assert len(stock_returns) == len(feature_stocks)
   assert len(stock_returns.columns) == len(feature_stocks)
   num_stocks = len(stock_returns.columns)
   current_weights = np.array(np.random.random(num_stocks))
   current_weights /= current_weights.sum()
+  best_weights = current_weights
   # TODO: add some history for visualization
   # optimization loops
   if method == 'montecarlo' or method == 'monte':
