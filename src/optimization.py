@@ -27,13 +27,14 @@ def calc_sharpe_ratio(mean_returns: pd.DataFrame):
 
 # optimize portfolio using sharpe ratio, method defines way to optimize
 # raw_data includes only closing price, indexed by date and columns matches exactly with feature_stocks
-def optimize_portfolio(raw_data: pd.DataFrame, feature_stocks: pd.Series, method='gradient'):
+def optimize_portfolio(stock_returns: pd.DataFrame, feature_stocks: pd.Series, method='gradient'):
   # initialize values
-  assert len(raw_data) == len(feature_stocks)
-  assert len(raw_data.columns) == len(feature_stocks)
-  num_stocks = len(raw_data.columns)
+  assert len(stock_returns) == len(feature_stocks)
+  assert len(stock_returns.columns) == len(feature_stocks)
+  num_stocks = len(stock_returns.columns)
   current_weights = np.array(np.random.random(num_stocks))
   current_weights /= current_weights.sum()
+  # TODO: add some history for visualization
   # optimization loops
   if method == 'montecarlo' or method == 'monte':
     # montecarlo optimization
@@ -42,7 +43,7 @@ def optimize_portfolio(raw_data: pd.DataFrame, feature_stocks: pd.Series, method
     # gradient descent optimization
     current_delta = DELTA_DEFAULT
     for iter in range(MAX_LOOP_GRAD):
-      current_mean_returns = calc_mean_returns(raw_data, current_weights)
+      current_mean_returns = calc_mean_returns(stock_returns, current_weights)
       current_sharpe_ratio = calc_sharpe_ratio(current_mean_returns)
       best_sharpe_ratio = current_sharpe_ratio
       # grid search
@@ -50,7 +51,7 @@ def optimize_portfolio(raw_data: pd.DataFrame, feature_stocks: pd.Series, method
         new_weights = current_weights.copy()
         new_weights[target_stock_index] += current_delta
         new_weights /= np.sum(new_weights)
-        new_mean_returns = calc_mean_returns(raw_data, new_weights)
+        new_mean_returns = calc_mean_returns(stock_returns, new_weights)
         new_sharpe_ratio = calc_sharpe_ratio(new_mean_returns)
         if new_sharpe_ratio > best_sharpe_ratio:
           best_sharpe_ratio = new_sharpe_ratio
