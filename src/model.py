@@ -36,7 +36,8 @@ class StockOptimizer(object):
     self.gridsearch(method=method)
     data_selected = self.stock_returns[self.feature_stocks]
     # some steps? time window size?
-    print(data_selected)
-    print(self.feature_stocks)
     result = op.optimize_portfolio(data_selected, self.feature_stocks)
-    return result
+    if self.verbose:
+      return result
+    else:
+      return result[:2]

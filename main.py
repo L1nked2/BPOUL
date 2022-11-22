@@ -2,9 +2,9 @@ from src import model as md
 from src import datacollection as dc
 import os.path
 import pandas as pd
+import csv
 
 data_path = os.path.join('returns.csv')
-
 asset_num = 10
 data_kor_raw = [None, None, None]
 
@@ -20,3 +20,14 @@ else:
 stock_optimizer = md.StockOptimizer(data=data_kor_raw, asset_num=asset_num, risk_rate=0, verbose=True)
 result = stock_optimizer.run_optimization()
 print(result)
+if len(result) > 2:
+  with open('sharpe_ratio.csv', 'w', newline='') as csvfile:
+      csvwriter = csv.writer(csvfile, delimiter=',')
+      csvwriter.writerow(['sharpe_ratio'])
+      for log in result[2]:
+        csvwriter.writerow([log[1]])
+  with open('risk_return.csv', 'w', newline='') as csvfile:
+      csvwriter = csv.writer(csvfile, delimiter=',')
+      csvwriter.writerow(['return', 'risk'])
+      for log in result[3]:
+        csvwriter.writerow([log[0], log[1]])

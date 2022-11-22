@@ -12,8 +12,12 @@ IMPROVEMENT_THRESHOLD = 0.0001
 
 # gets raw_data(closing price) and weights
 # returns the mean_daily_return
-def calc_mean_returns(raw_data: pd.DataFrame, weights: np.array):
-  stock_returns = raw_data.mul(pd.Series(weights))
+def calc_mean_returns(raw_data: pd.DataFrame, feature_stocks, weights: np.array):
+  assert len(feature_stocks) == len(weights)
+  weights_dict = dict()
+  for stock_name, weights in zip(feature_stocks, weights):
+    weights_dict[stock_name] = weights
+  stock_returns = raw_data.mul(weights_dict)
   mean_returns = stock_returns.sum(axis=1)
   return mean_returns
 
@@ -33,6 +37,8 @@ def optimize_portfolio(stock_returns: pd.DataFrame, feature_stocks: pd.Series, m
   current_weights = np.array(np.random.random(num_stocks))
   current_weights /= current_weights.sum()
   best_weights = current_weights
+  weight_history = list()
+  risk_return_log = list()
   # TODO: add some history for visualization
   # optimization loops
   if method == 'montecarlo' or method == 'monte':
@@ -42,7 +48,7 @@ def optimize_portfolio(stock_returns: pd.DataFrame, feature_stocks: pd.Series, m
     # gradient descent optimization
     current_delta = DELTA_DEFAULT
     for iter in range(MAX_LOOP_GRAD):
-      current_mean_returns = calc_mean_returns(stock_returns, current_weights)
+      current_mean_returns = calc_mean_returns(stock_returns, feature_stocks, current_weights)
       current_sharpe_ratio = calc_sharpe_ratio(current_mean_returns)
       best_sharpe_ratio = current_sharpe_ratio
       # grid search
@@ -50,7 +56,7 @@ def optimize_portfolio(stock_returns: pd.DataFrame, feature_stocks: pd.Series, m
         new_weights = current_weights.copy()
         new_weights[target_stock_index] += current_delta
         new_weights /= np.sum(new_weights)
-        new_mean_returns = calc_mean_returns(stock_returns, new_weights)
+        new_mean_returns = calc_mean_returns(stock_returns, feature_stocks, new_weights)
         new_sharpe_ratio = calc_sharpe_ratio(new_mean_returns)
         if new_sharpe_ratio > best_sharpe_ratio:
           best_sharpe_ratio = new_sharpe_ratio
@@ -63,6 +69,8 @@ def optimize_portfolio(stock_returns: pd.DataFrame, feature_stocks: pd.Series, m
             break
           else:
             current_delta = current_delta * DELTA_DECAY_RATIO
+      weight_history.append((current_weights, current_sharpe_ratio))
+      risk_return_log.append(((252**0.5) * current_mean_returns.mean(), (252**0.5) * current_mean_returns.std()))
       current_weights = best_weights
-  return best_weights, best_sharpe_ratio
+  return best_weights, best_sharpe_ratio, weight_history, risk_return_log
 
