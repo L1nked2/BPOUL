@@ -12,24 +12,32 @@ class StockOptimizer(object):
     self.verbose = verbose
 
   
-  # load raw data and translate to pd.DataFrame()
+  # load raw data and preprocess
   def _load_stock_data(self, data):
-    self.data = pd.DataFrame(data)
-    self.stock_returns = self.data["close"].pct_change()
+    self.data = data
+    self.stock_close = self.data[0]
+    self.stock_returns = self.data[1]
+    self.correlation_matrix = self.data[2]
     return
 
 
   def gridsearch(self, method='KMeans'):
     self.feature_stocks = []
+    for iter in range(self.asset_num):
+      self.feature_stocks.append(None)
     if method == 'KMeans':
-      result = cl.KMeansClustering(self.data)
-    
+      result = cl.KMeansClustering(self.stock_returns, self.asset_num)
+    for label, content in result.iterrows():
+      if self.feature_stocks[content[1]] is None:
+        self.feature_stocks[content[1]] = content[0]
     return
 
-  def run_optimization(self):
-    self.gridsearch()
-    data_selected = self.data[self.feature_stocks]
-    # some steps?
-
+  def run_optimization(self, method='KMeans'):
+    self.gridsearch(method=method)
+    data_selected = self.stock_returns[self.feature_stocks]
+    # some steps? time window size?
     result = op.optimize_portfolio(data_selected, self.feature_stocks)
-    return result
+    if self.verbose:
+      return result
+    else:
+      return result[:2]
