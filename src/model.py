@@ -21,12 +21,12 @@ class StockOptimizer(object):
     return
 
 
-  def gridsearch(self, method='KMeans'):
+  def gridsearch(self, method='KMeans', pca=False):
     self.feature_stocks = []
     for iter in range(self.asset_num):
       self.feature_stocks.append(None)
-    if method == 'KMeans':
-      result = cl.KMeansClustering(self.stock_returns, self.asset_num)
+    if method == 'KMeans' or method == 'kmeans':
+      result = cl.KMeansClustering(self.stock_returns, self.asset_num, pca)
     elif method == 'hierarchical':
       result = cl.HierarchicalClustering(self.stock_returns, self.asset_num)
     elif method == 'spectral':
@@ -36,8 +36,8 @@ class StockOptimizer(object):
         self.feature_stocks[content[1]] = content[0]
     return
 
-  def run_optimization(self, method='KMeans'):
-    self.gridsearch(method=method)
+  def run_optimization(self, method='KMeans', pca=False):
+    self.gridsearch(method=method, pca=pca)
     data_selected = self.stock_returns[self.feature_stocks]
     # some steps? time window size?
     result = op.optimize_portfolio(data_selected, self.feature_stocks)
