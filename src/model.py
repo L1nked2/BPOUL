@@ -27,6 +27,10 @@ class StockOptimizer(object):
       self.feature_stocks.append(None)
     if method == 'KMeans':
       result = cl.KMeansClustering(self.stock_returns, self.asset_num)
+    elif method == 'hierarchical':
+      result = cl.HierarchicalClustering(self.stock_returns, self.asset_num)
+    elif method == 'spectral':
+      result = cl.SpectralClustering(self.stock_returns, self.asset_num)
     for label, content in result.iterrows():
       if self.feature_stocks[content[1]] is None:
         self.feature_stocks[content[1]] = content[0]
