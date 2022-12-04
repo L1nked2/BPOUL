@@ -18,7 +18,7 @@ else:
   data_kor_raw[1].to_csv(data_path)
 
 stock_optimizer = md.StockOptimizer(data=data_kor_raw, asset_num=asset_num, risk_rate=0, verbose=True)
-result = stock_optimizer.run_optimization()
+result = stock_optimizer.run_optimization(method='hierarchical', pca=True)
 print(result)
 if len(result) > 2:
   with open('sharpe_ratio.csv', 'w', newline='') as csvfile:
